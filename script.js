@@ -135,14 +135,51 @@ function detectFeatures() {
 
 function initLensButtons() { 
     const lenses = document.querySelectorAll(".lens-glass-element");
-    const anchorSection = document.querySelector('.hero-section') || document.body;
+    
+    // Aggressive Global Lazy Load Queue: Offloads heavy composite generation to idle background threads.
+    let lazyQueue = [];
+    let isProcessingQueue = false;
+
+    async function processLazyQueue() {
+        if (lazyQueue.length === 0) {
+            isProcessingQueue = false;
+            return;
+        }
+        isProcessingQueue = true;
+        
+        // Relieve the main thread. Waits until the browser is doing absolutely nothing before mapping the next button.
+        await new Promise(resolve => {
+            if ('requestIdleCallback' in window) {
+                requestIdleCallback(resolve, { timeout: 500 });
+            } else {
+                setTimeout(resolve, 50);
+            }
+        });
+
+        const task = lazyQueue.shift();
+        await task();
+
+        processLazyQueue();
+    }
     
     lenses.forEach(gEl => {
+        
+        // Critical: Anchor allows clones to borrow the specific background of the closest container
+        let anchorSection = gEl.closest('.gallery-card, .hero-section, .installation-section');
+        if (!anchorSection) {
+            if (gEl.closest('.header')) {
+                anchorSection = document.querySelector('.hero-section');
+            } else {
+                anchorSection = document.body;
+            }
+        }
+
         const id = gEl.getAttribute("data-id");
         if (!id) return;
 
         const isStatic = gEl.classList.contains("static-lens");
         const isResponsive = gEl.getAttribute("data-responsive") === "true";
+        const isLazy = gEl.getAttribute("data-lazy-glass") === "true";
 
         let width = parseInt(gEl.getAttribute("data-width") || 200);
         let height = parseInt(gEl.getAttribute("data-height") || 60);
@@ -156,7 +193,8 @@ function initLensButtons() {
             objectWidth: width, objectHeight: height, radius: radius, 
             isHovered: false, isPressed: false, 
             velocityX: 0, velocityY: 0,
-            needsOffsetUpdate: true
+            needsOffsetUpdate: true,
+            mapsGenerated: false
         }; 
         
         // STRONGER BLURRY SHADOW SPRINGS: Deep blur spread with a much higher alpha for beautiful visibility
@@ -174,6 +212,8 @@ function initLensButtons() {
         const wakeLensEngine = () => { if (!af) af = requestAnimationFrame(loop); };
         
         async function generateMaps(w, h) {
+            if (s.mapsGenerated && w === s.objectWidth && h === s.objectHeight) return;
+
             s.objectWidth = Math.round(w);
             s.objectHeight = Math.round(h);
             
@@ -236,9 +276,33 @@ function initLensButtons() {
             if (dispMap && s.md) {
                 dispMap.setAttribute("scale", s.md * s.refractionScale);
             }
+            s.mapsGenerated = true;
         }
 
-        generateMaps(s.objectWidth, s.objectHeight);
+        // Lazy Execution Logic: Saves hundreds of ms of CPU block during critical load
+        if (isLazy) {
+            if (isStatic && 'IntersectionObserver' in window) {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting && !s.mapsGenerated) {
+                            generateMaps(s.objectWidth, s.objectHeight).then(wakeLensEngine);
+                            observer.unobserve(gEl);
+                        }
+                    });
+                }, { rootMargin: "300px 0px" });
+                observer.observe(gEl);
+            } else {
+                // AGGRESSIVE PRE-CACHE: Silently loads the lens map in idle background time before hover happens.
+                lazyQueue.push(async () => {
+                    if (!s.mapsGenerated) {
+                        await generateMaps(s.objectWidth, s.objectHeight);
+                        wakeLensEngine();
+                    }
+                });
+            }
+        } else {
+            generateMaps(s.objectWidth, s.objectHeight);
+        }
         
         const filterUrl = `url(#lensLiquidGlassFilter_${id})`;
         if (useBackdropFilter) {
@@ -300,7 +364,7 @@ function initLensButtons() {
             }
 
             // =========================================================
-            // DYNAMIC LENS LOOP (BUTTONS ONLY - More & Booking)
+            // DYNAMIC LENS LOOP (BUTTONS ONLY)
             // =========================================================
             const dt = Math.min(0.032, 1 / 60); 
             
@@ -345,7 +409,8 @@ function initLensButtons() {
             }
             
             if(gIn) {
-                const newInnerShadow = `inset ${ox * 0.3}px ${oy * 0.4}px 16px rgba(0,0,0,${a * 0.4}), inset ${-ox * 0.3}px ${-oy * 0.4}px 16px rgba(255,255,255,${a * 3})`;
+                // Lowered the inner shine to a perfectly balanced midpoint (a * 1.5) restoring the bottom lip properly
+                const newInnerShadow = `inset ${ox * 0.3}px ${oy * 0.4}px 16px rgba(0,0,0,${a * 0.4}), inset ${-ox * 0.3}px ${-oy * 0.4}px 16px rgba(255,255,255,${a * 1.5})`;
                 if (s.lastInnerShadow !== newInnerShadow) {
                     gIn.style.boxShadow = newInnerShadow;
                     s.lastInnerShadow = newInnerShadow;
@@ -375,6 +440,7 @@ function initLensButtons() {
                 }
             }
             
+            // Loop Termination: The engine flawlessly kills the requestAnimationFrame the moment the mouse leaves and the spring settles.
             if (!(Object.values(sp).every(x => x.isSettled()) && Math.abs(s.velocityX) < 1 && Math.abs(s.velocityY) < 1)) {
                 af = requestAnimationFrame(loop);
             } else {
@@ -383,7 +449,11 @@ function initLensButtons() {
         } 
 
         if (!isStatic) {
-            gEl.addEventListener("pointerenter", () => { s.isHovered = true; wakeLensEngine(); });
+            gEl.addEventListener("pointerenter", async () => { 
+                s.isHovered = true; 
+                if (isLazy && !s.mapsGenerated) await generateMaps(s.objectWidth, s.objectHeight);
+                wakeLensEngine(); 
+            });
             gEl.addEventListener("pointerleave", () => { s.isHovered = false; s.isPressed = false; wakeLensEngine(); });
             gEl.addEventListener("pointerdown", (e) => { s.isPressed = true; s.velocityX = 1200; s.velocityY = -600; wakeLensEngine(); });
             window.addEventListener("pointerup", () => { s.isPressed = false; wakeLensEngine(); });
@@ -392,8 +462,15 @@ function initLensButtons() {
         window.addEventListener("resize", updC);
         
         updC();
-        wakeLensEngine(); 
+        
+        // Only run initial engine tick if not deferred
+        if (!isLazy) wakeLensEngine(); 
     });
+
+    // Fire the pre-cache sequential generation exactly once after initialization completes
+    if (!isProcessingQueue && lazyQueue.length > 0) {
+        processLazyQueue();
+    }
 }
 // ==========================================================================
 
@@ -406,7 +483,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // Core Hero Image Logic (Runs Immediately)
     const loadHeroImage = () => {
         const heroBgLayer = document.querySelector('.hero-bg-layer');
-        const lensCloneBgs = document.querySelectorAll('.lens-clone-bg'); // Maps all glass clone overlays dynamically
         if(heroBgLayer && !heroBgLayer.classList.contains('loaded')) {
             const imgUrl = 'image/support.webp';
             const img = new Image();
@@ -416,7 +492,9 @@ document.addEventListener("DOMContentLoaded", () => {
             img.onload = () => {
                 heroBgLayer.style.backgroundImage = `url('${imgUrl}')`;
                 heroBgLayer.classList.add('loaded');
-                lensCloneBgs.forEach(bg => {
+                
+                // Only bind to elements that explicitly belong to the hero section or the header utilizing it
+                document.querySelectorAll('.hero-section .lens-clone-bg, .header .lens-clone-bg').forEach(bg => {
                     bg.style.backgroundImage = `url('${imgUrl}')`;
                     bg.classList.add('loaded');
                 });
@@ -445,33 +523,39 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
+        const processBackground = (bgElement) => {
+            const bgUrl = bgElement.getAttribute('data-bg');
+            if (bgUrl) {
+                bgElement.style.backgroundImage = `url('${bgUrl}')`;
+                
+                // ISOLATION FIX: Accurately locate the true anchor container even if bgElement is an empty child (like .gallery-image)
+                let container = bgElement.closest('.gallery-card, .hero-section, .installation-section') || bgElement;
+                
+                container.querySelectorAll('.lens-clone-bg').forEach(cloneBg => {
+                    let anchor = cloneBg.closest('.gallery-card, .hero-section, .installation-section');
+                    if (anchor === container) {
+                        cloneBg.style.backgroundImage = `url('${bgUrl}')`;
+                        cloneBg.classList.add('loaded');
+                    }
+                });
+            }
+            bgElement.classList.remove('lazy-bg');
+        };
+
         const lazyBackgrounds = document.querySelectorAll('.lazy-bg');
         if ('IntersectionObserver' in window) {
             const bgObserver = new IntersectionObserver((entries, observer) => {
                 entries.forEach((entry) => {
                     if (entry.isIntersecting) {
-                        const bgElement = entry.target;
-                        const bgUrl = bgElement.getAttribute('data-bg');
-                        if (bgUrl) {
-                            bgElement.style.backgroundImage = `url('${bgUrl}')`;
-                        }
-                        bgElement.classList.remove('lazy-bg');
-                        observer.unobserve(bgElement);
+                        processBackground(entry.target);
+                        observer.unobserve(entry.target);
                     }
                 });
             }, { rootMargin: "250px 0px" });
 
-            lazyBackgrounds.forEach((bg) => {
-                bgObserver.observe(bg);
-            });
+            lazyBackgrounds.forEach((bg) => bgObserver.observe(bg));
         } else {
-            lazyBackgrounds.forEach((bg) => {
-                const bgUrl = bg.getAttribute('data-bg');
-                if (bgUrl) {
-                    bg.style.backgroundImage = `url('${bgUrl}')`;
-                }
-                bg.classList.remove('lazy-bg');
-            });
+            lazyBackgrounds.forEach(processBackground);
         }
 
         const lazyVideos = document.querySelectorAll('.lazy-video');
@@ -532,13 +616,17 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!textBlock || !bodyContainer) return;
 
             bodyContainer.classList.remove('hide-text-block');
+            
+            // Force synchronous layout recalculation explicitly before validating
+            void textBlock.offsetHeight;
 
             if (window.innerWidth <= 1300) {
                 bodyContainer.classList.add('hide-text-block');
                 return;
             }
 
-            if (textBlock.scrollHeight > textBlock.clientHeight) {
+            // ROBUST OVERFLOW CHECK: A +15px tolerance prevents minor baseline rendering artifacts or decimal heights from triggering false-positives
+            if (textBlock.scrollHeight > textBlock.clientHeight + 15) {
                 bodyContainer.classList.add('hide-text-block');
             }
         };
