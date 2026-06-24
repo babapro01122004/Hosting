@@ -817,7 +817,7 @@
             <div class="gallery-nav">
                 
                 <div class="lens-shadow-wrapper gallery-nav-lens">
-                    <button class="lens-glass-element prev-btn" data-width="48" data-height="48" data-radius="24" data-id="gallery_prev" style="width: 48px; height: 48px; border-radius: 24px;" aria-label="Previous image" disabled>
+                    <button class="lens-glass-element prev-btn" data-lazy-glass="true" data-width="48" data-height="48" data-radius="24" data-id="gallery_prev" style="width: 48px; height: 48px; border-radius: 24px;" aria-label="Previous image" disabled>
                         <div class="lens-content-clone">
                             <div class="lens-clone-inner">
                                 <div class="lens-clone-bg"></div>
@@ -831,11 +831,15 @@
                         <svg style="width: 0; height: 0; position: absolute;" aria-hidden="true">
                             <defs>
                                 <filter id="lensLiquidGlassFilter_gallery_prev" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+                                    <feGaussianBlur in="SourceGraphic" stdDeviation="0.5" result="blurred" />
+                                    <feImage id="lensDisplacementImage_gallery_prev" href="" x="0" y="0" width="48" height="48" result="displacement_map" preserveAspectRatio="none" />
+                                    <feDisplacementMap id="lensDisplacementMap_gallery_prev" in="blurred" in2="displacement_map" scale="50" xChannelSelector="R" yChannelSelector="G" result="displaced" />
+                                    <feColorMatrix in="displaced" type="saturate" values="1.3" result="displaced_saturated" />
                                     <feImage id="lensSpecularImage_gallery_prev" href="" x="0" y="0" width="48" height="48" result="specular_layer" preserveAspectRatio="none" />
                                     <feComponentTransfer in="specular_layer" result="specular_faded">
                                         <feFuncA type="linear" slope="0.5" />
                                     </feComponentTransfer>
-                                    <feBlend in="specular_faded" in2="SourceGraphic" mode="screen" />
+                                    <feBlend in="specular_faded" in2="displaced_saturated" mode="screen" />
                                 </filter>
                             </defs>
                         </svg>
@@ -843,7 +847,7 @@
                 </div>
                 
                 <div class="lens-shadow-wrapper gallery-more-lens">
-                    <a href="#products-full" class="lens-glass-element" data-width="120" data-height="48" data-radius="24" data-id="gallery_more" style="width: 120px; height: 48px; border-radius: 24px;" aria-label="More">
+                    <a href="#products-full" class="lens-glass-element" data-lazy-glass="true" data-width="120" data-height="48" data-radius="24" data-id="gallery_more" style="width: 120px; height: 48px; border-radius: 24px;" aria-label="More">
                         <div class="lens-content-clone">
                             <div class="lens-clone-inner">
                                 <div class="lens-clone-bg"></div>
@@ -854,12 +858,16 @@
                         <span class="lens-glass-text">More</span>
                         <svg style="width: 0; height: 0; position: absolute;" aria-hidden="true">
                             <defs>
-                                <filter id="lensLiquidGlassFilter_gallery_more" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
+                                <filter id="lensLiquidGlassFilter_gallery_more" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+                                    <feGaussianBlur in="SourceGraphic" stdDeviation="0.5" result="blurred" />
+                                    <feImage id="lensDisplacementImage_gallery_more" href="" x="0" y="0" width="120" height="48" result="displacement_map" preserveAspectRatio="none" />
+                                    <feDisplacementMap id="lensDisplacementMap_gallery_more" in="blurred" in2="displacement_map" scale="50" xChannelSelector="R" yChannelSelector="G" result="displaced" />
+                                    <feColorMatrix in="displaced" type="saturate" values="1.3" result="displaced_saturated" />
                                     <feImage id="lensSpecularImage_gallery_more" href="" x="0" y="0" width="120" height="48" result="specular_layer" preserveAspectRatio="none" />
                                     <feComponentTransfer in="specular_layer" result="specular_faded">
                                         <feFuncA type="linear" slope="0.5" />
                                     </feComponentTransfer>
-                                    <feBlend in="specular_faded" in2="SourceGraphic" mode="screen" />
+                                    <feBlend in="specular_faded" in2="displaced_saturated" mode="screen" />
                                 </filter>
                             </defs>
                         </svg>
@@ -867,7 +875,7 @@
                 </div>
 
                 <div class="lens-shadow-wrapper gallery-nav-lens">
-                    <button class="lens-glass-element next-btn" data-width="48" data-height="48" data-radius="24" data-id="gallery_next" style="width: 48px; height: 48px; border-radius: 24px;" aria-label="Next image">
+                    <button class="lens-glass-element next-btn" data-lazy-glass="true" data-width="48" data-height="48" data-radius="24" data-id="gallery_next" style="width: 48px; height: 48px; border-radius: 24px;" aria-label="Next image">
                         <div class="lens-content-clone">
                             <div class="lens-clone-inner">
                                 <div class="lens-clone-bg"></div>
@@ -881,11 +889,15 @@
                         <svg style="width: 0; height: 0; position: absolute;" aria-hidden="true">
                             <defs>
                                 <filter id="lensLiquidGlassFilter_gallery_next" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+                                    <feGaussianBlur in="SourceGraphic" stdDeviation="0.5" result="blurred" />
+                                    <feImage id="lensDisplacementImage_gallery_next" href="" x="0" y="0" width="48" height="48" result="displacement_map" preserveAspectRatio="none" />
+                                    <feDisplacementMap id="lensDisplacementMap_gallery_next" in="blurred" in2="displacement_map" scale="50" xChannelSelector="R" yChannelSelector="G" result="displaced" />
+                                    <feColorMatrix in="displaced" type="saturate" values="1.3" result="displaced_saturated" />
                                     <feImage id="lensSpecularImage_gallery_next" href="" x="0" y="0" width="48" height="48" result="specular_layer" preserveAspectRatio="none" />
                                     <feComponentTransfer in="specular_layer" result="specular_faded">
                                         <feFuncA type="linear" slope="0.5" />
                                     </feComponentTransfer>
-                                    <feBlend in="specular_faded" in2="SourceGraphic" mode="screen" />
+                                    <feBlend in="specular_faded" in2="displaced_saturated" mode="screen" />
                                 </filter>
                             </defs>
                         </svg>
