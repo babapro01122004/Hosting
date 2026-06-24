@@ -258,9 +258,19 @@
         .excellence-cards-container { width: 100%; max-width: 100%; margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; overflow: hidden; }
         .excellence-card { position: relative; overflow: hidden; background-color: #222; border-radius: 0; padding: 50px 25px 50px 25px; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; text-align: left; min-height: 650px; color: #ffffff; background-size: cover; background-position: center; background-repeat: no-repeat; border: none; box-shadow: -15px 0 30px rgba(0,0,0,0.25); z-index: 1; }
         .excellence-card:first-child { box-shadow: none; }
+        
+        /* Apply transition to before element and hide gradient overlay on hover */
+        .excellence-card::before { transition: opacity 0.5s ease; }
+        .excellence-card:hover::before, .excellence-card:active::before { opacity: 0; }
+        
         .excellence-card.fade-blue::before { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 75%; background: linear-gradient(to top, rgba(50, 130, 200, 0.85) 0%, rgba(50, 130, 200, 0) 100%); z-index: -1; pointer-events: none; }
         .excellence-card.fade-gold::before { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 75%; background: linear-gradient(to top, rgba(146, 111, 49, 0.75) 0%, rgba(146, 111, 49, 0) 100%); z-index: -1; pointer-events: none; }
         .excellence-card.fade-dark::before { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 75%; background: linear-gradient(to top, rgba(20, 20, 20, 0.85) 0%, rgba(20, 20, 20, 0) 100%); z-index: -1; pointer-events: none; }
+        
+        /* STEEP FOCAL BLUR FIX: High intensity at the bottom, short exponential drop off starting at 50% height */
+        .excellence-card::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 75%; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); -webkit-mask-image: linear-gradient(to top, black 0%, black 50%, rgba(0,0,0,0.6) 58%, rgba(0,0,0,0.1) 64%, transparent 70%); mask-image: linear-gradient(to top, black 0%, black 50%, rgba(0,0,0,0.6) 58%, rgba(0,0,0,0.1) 64%, transparent 70%); z-index: -1; pointer-events: none; transition: opacity 0.5s ease; }
+        .excellence-card:hover::after, .excellence-card:active::after { opacity: 0; }
+
         .excellence-video-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; pointer-events: none; }
 
         .card-title { position: relative; z-index: 2; font-size: 2.6rem; font-weight: 100; color: #ffffff; margin: 0; letter-spacing: 0.5px; line-height: 1.1; display: flex; flex-direction: column; align-items: flex-start; white-space: normal; word-break: keep-all; }
@@ -333,10 +343,16 @@
         .faq-item { border-bottom: 1px solid rgba(0, 0, 0, 0.05); }
         .faq-question { width: 100%; text-align: left; padding: 25px 0; background: none; border: none; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 1.25rem; font-family: inherit; font-weight: 400; color: #111; transition: color 0.3s ease; }
         .faq-question:hover { color: #6b7280; }
-        .faq-icon { width: 32px; height: 32px; transition: transform 0.3s ease, color 0.3s ease; fill: none; stroke: currentColor; stroke-width: 1; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; margin-left: 20px; }
+        
+        /* FAQ Liquid Glass Button Styles */
+        .faq-glass-lens { margin-left: 20px; flex-shrink: 0; width: auto; display: inline-block; }
+        .faq-icon-glass { width: 44px; height: 44px; border-radius: 22px; }
+        .faq-icon-glass .lens-glass-text { color: #6b7280; }
+        .faq-icon-svg { width: 22px; height: 22px; transition: transform 0.3s ease, color 0.3s ease; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
         .faq-vline { transition: transform 0.3s ease, opacity 0.3s ease; transform-origin: 12px 12px; }
-        .faq-item.active .faq-icon { transform: rotate(90deg); color: #9ca3af; }
+        .faq-item.active .faq-icon-svg { transform: rotate(90deg); color: #6b7280; }
         .faq-item.active .faq-vline { transform: rotate(90deg); opacity: 0; }
+        
         .faq-answer { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.3s ease-out; }
         .faq-item.active .faq-answer { grid-template-rows: 1fr; }
         .faq-answer-inner { overflow: hidden; }
@@ -1237,7 +1253,40 @@
             <div class="faq-item stagger-item">
                 <button class="faq-question">
                     <span>What separates Solveria from standard solar providers?</span>
-                    <svg class="faq-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11"></circle><line class="faq-vline" x1="12" y1="7" x2="12" y2="17"></line><line class="faq-hline" x1="7" y1="12" x2="17" y2="12"></line></svg>
+                    
+                    <span class="lens-shadow-wrapper faq-glass-lens">
+                        <span class="lens-glass-element faq-icon-glass" data-lazy-glass="true" data-width="44" data-height="44" data-radius="22" data-id="faq_1" style="width: 44px; height: 44px; border-radius: 22px;">
+                            <span class="lens-content-clone">
+                                <span class="lens-clone-inner">
+                                    <span class="lens-clone-bg"></span>
+                                    <span style="position: absolute; inset: 0; background: rgba(0,0,0,0.03);"></span>
+                                </span>
+                            </span>
+                            <span class="lens-glass-inner"></span>
+                            <span class="lens-glass-text">
+                                <svg class="faq-icon-svg" viewBox="0 0 24 24">
+                                    <line class="faq-vline" x1="12" y1="7" x2="12" y2="17"></line>
+                                    <line class="faq-hline" x1="7" y1="12" x2="17" y2="12"></line>
+                                </svg>
+                            </span>
+                            <svg style="width: 0; height: 0; position: absolute;" aria-hidden="true">
+                                <defs>
+                                    <filter id="lensLiquidGlassFilter_faq_1" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+                                        <feGaussianBlur in="SourceGraphic" stdDeviation="0.5" result="blurred" />
+                                        <feImage id="lensDisplacementImage_faq_1" href="" x="0" y="0" width="44" height="44" result="displacement_map" preserveAspectRatio="none" />
+                                        <feDisplacementMap id="lensDisplacementMap_faq_1" in="blurred" in2="displacement_map" scale="50" xChannelSelector="R" yChannelSelector="G" result="displaced" />
+                                        <feColorMatrix in="displaced" type="saturate" values="1.3" result="displaced_saturated" />
+                                        <feImage id="lensSpecularImage_faq_1" href="" x="0" y="0" width="44" height="44" result="specular_layer" preserveAspectRatio="none" />
+                                        <feComponentTransfer in="specular_layer" result="specular_faded">
+                                            <feFuncA type="linear" slope="0.5" />
+                                        </feComponentTransfer>
+                                        <feBlend in="specular_faded" in2="displaced_saturated" mode="screen" />
+                                    </filter>
+                                </defs>
+                            </svg>
+                        </span>
+                    </span>
+
                 </button>
                 <div class="faq-answer">
                     <div class="faq-answer-inner"><p>We engineer exclusively for high-yield, long-term sovereignty. We utilize tier-one components, commercial-grade racking, and execute with absolute precision—ensuring your system outlasts industry standards and maximizes your property's ROI.</p></div>
@@ -1246,7 +1295,40 @@
             <div class="faq-item stagger-item">
                 <button class="faq-question">
                     <span>How long does the entire installation process take?</span>
-                    <svg class="faq-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11"></circle><line class="faq-vline" x1="12" y1="7" x2="12" y2="17"></line><line class="faq-hline" x1="7" y1="12" x2="17" y2="12"></line></svg>
+                    
+                    <span class="lens-shadow-wrapper faq-glass-lens">
+                        <span class="lens-glass-element faq-icon-glass" data-lazy-glass="true" data-width="44" data-height="44" data-radius="22" data-id="faq_2" style="width: 44px; height: 44px; border-radius: 22px;">
+                            <span class="lens-content-clone">
+                                <span class="lens-clone-inner">
+                                    <span class="lens-clone-bg"></span>
+                                    <span style="position: absolute; inset: 0; background: rgba(0,0,0,0.03);"></span>
+                                </span>
+                            </span>
+                            <span class="lens-glass-inner"></span>
+                            <span class="lens-glass-text">
+                                <svg class="faq-icon-svg" viewBox="0 0 24 24">
+                                    <line class="faq-vline" x1="12" y1="7" x2="12" y2="17"></line>
+                                    <line class="faq-hline" x1="7" y1="12" x2="17" y2="12"></line>
+                                </svg>
+                            </span>
+                            <svg style="width: 0; height: 0; position: absolute;" aria-hidden="true">
+                                <defs>
+                                    <filter id="lensLiquidGlassFilter_faq_2" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+                                        <feGaussianBlur in="SourceGraphic" stdDeviation="0.5" result="blurred" />
+                                        <feImage id="lensDisplacementImage_faq_2" href="" x="0" y="0" width="44" height="44" result="displacement_map" preserveAspectRatio="none" />
+                                        <feDisplacementMap id="lensDisplacementMap_faq_2" in="blurred" in2="displacement_map" scale="50" xChannelSelector="R" yChannelSelector="G" result="displaced" />
+                                        <feColorMatrix in="displaced" type="saturate" values="1.3" result="displaced_saturated" />
+                                        <feImage id="lensSpecularImage_faq_2" href="" x="0" y="0" width="44" height="44" result="specular_layer" preserveAspectRatio="none" />
+                                        <feComponentTransfer in="specular_layer" result="specular_faded">
+                                            <feFuncA type="linear" slope="0.5" />
+                                        </feComponentTransfer>
+                                        <feBlend in="specular_faded" in2="displaced_saturated" mode="screen" />
+                                    </filter>
+                                </defs>
+                            </svg>
+                        </span>
+                    </span>
+
                 </button>
                 <div class="faq-answer">
                     <div class="faq-answer-inner"><p>After final design approval and local permitting, our specialized elite crews typically complete the physical installation in just 1 to 3 days, effectively minimizing any disruption to your property or daily operations.</p></div>
@@ -1255,7 +1337,40 @@
             <div class="faq-item stagger-item">
                 <button class="faq-question">
                     <span>What happens during a complete grid power outage?</span>
-                    <svg class="faq-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11"></circle><line class="faq-vline" x1="12" y1="7" x2="12" y2="17"></line><line class="faq-hline" x1="7" y1="12" x2="17" y2="12"></line></svg>
+                    
+                    <span class="lens-shadow-wrapper faq-glass-lens">
+                        <span class="lens-glass-element faq-icon-glass" data-lazy-glass="true" data-width="44" data-height="44" data-radius="22" data-id="faq_3" style="width: 44px; height: 44px; border-radius: 22px;">
+                            <span class="lens-content-clone">
+                                <span class="lens-clone-inner">
+                                    <span class="lens-clone-bg"></span>
+                                    <span style="position: absolute; inset: 0; background: rgba(0,0,0,0.03);"></span>
+                                </span>
+                            </span>
+                            <span class="lens-glass-inner"></span>
+                            <span class="lens-glass-text">
+                                <svg class="faq-icon-svg" viewBox="0 0 24 24">
+                                    <line class="faq-vline" x1="12" y1="7" x2="12" y2="17"></line>
+                                    <line class="faq-hline" x1="7" y1="12" x2="17" y2="12"></line>
+                                </svg>
+                            </span>
+                            <svg style="width: 0; height: 0; position: absolute;" aria-hidden="true">
+                                <defs>
+                                    <filter id="lensLiquidGlassFilter_faq_3" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+                                        <feGaussianBlur in="SourceGraphic" stdDeviation="0.5" result="blurred" />
+                                        <feImage id="lensDisplacementImage_faq_3" href="" x="0" y="0" width="44" height="44" result="displacement_map" preserveAspectRatio="none" />
+                                        <feDisplacementMap id="lensDisplacementMap_faq_3" in="blurred" in2="displacement_map" scale="50" xChannelSelector="R" yChannelSelector="G" result="displaced" />
+                                        <feColorMatrix in="displaced" type="saturate" values="1.3" result="displaced_saturated" />
+                                        <feImage id="lensSpecularImage_faq_3" href="" x="0" y="0" width="44" height="44" result="specular_layer" preserveAspectRatio="none" />
+                                        <feComponentTransfer in="specular_layer" result="specular_faded">
+                                            <feFuncA type="linear" slope="0.5" />
+                                        </feComponentTransfer>
+                                        <feBlend in="specular_faded" in2="displaced_saturated" mode="screen" />
+                                    </filter>
+                                </defs>
+                            </svg>
+                        </span>
+                    </span>
+
                 </button>
                 <div class="faq-answer">
                     <div class="faq-answer-inner"><p>If paired with our advanced battery storage solutions, your property will seamlessly and instantly transition to stored solar energy, providing continuous, reliable power for critical loads even during devastating local grid failures.</p></div>
@@ -1264,7 +1379,40 @@
             <div class="faq-item stagger-item">
                 <button class="faq-question">
                     <span>What type of warranties are included?</span>
-                    <svg class="faq-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11"></circle><line class="faq-vline" x1="12" y1="7" x2="12" y2="17"></line><line class="faq-hline" x1="7" y1="12" x2="17" y2="12"></line></svg>
+                    
+                    <span class="lens-shadow-wrapper faq-glass-lens">
+                        <span class="lens-glass-element faq-icon-glass" data-lazy-glass="true" data-width="44" data-height="44" data-radius="22" data-id="faq_4" style="width: 44px; height: 44px; border-radius: 22px;">
+                            <span class="lens-content-clone">
+                                <span class="lens-clone-inner">
+                                    <span class="lens-clone-bg"></span>
+                                    <span style="position: absolute; inset: 0; background: rgba(0,0,0,0.03);"></span>
+                                </span>
+                            </span>
+                            <span class="lens-glass-inner"></span>
+                            <span class="lens-glass-text">
+                                <svg class="faq-icon-svg" viewBox="0 0 24 24">
+                                    <line class="faq-vline" x1="12" y1="7" x2="12" y2="17"></line>
+                                    <line class="faq-hline" x1="7" y1="12" x2="17" y2="12"></line>
+                                </svg>
+                            </span>
+                            <svg style="width: 0; height: 0; position: absolute;" aria-hidden="true">
+                                <defs>
+                                    <filter id="lensLiquidGlassFilter_faq_4" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+                                        <feGaussianBlur in="SourceGraphic" stdDeviation="0.5" result="blurred" />
+                                        <feImage id="lensDisplacementImage_faq_4" href="" x="0" y="0" width="44" height="44" result="displacement_map" preserveAspectRatio="none" />
+                                        <feDisplacementMap id="lensDisplacementMap_faq_4" in="blurred" in2="displacement_map" scale="50" xChannelSelector="R" yChannelSelector="G" result="displaced" />
+                                        <feColorMatrix in="displaced" type="saturate" values="1.3" result="displaced_saturated" />
+                                        <feImage id="lensSpecularImage_faq_4" href="" x="0" y="0" width="44" height="44" result="specular_layer" preserveAspectRatio="none" />
+                                        <feComponentTransfer in="specular_layer" result="specular_faded">
+                                            <feFuncA type="linear" slope="0.5" />
+                                        </feComponentTransfer>
+                                        <feBlend in="specular_faded" in2="displaced_saturated" mode="screen" />
+                                    </filter>
+                                </defs>
+                            </svg>
+                        </span>
+                    </span>
+
                 </button>
                 <div class="faq-answer">
                     <div class="faq-answer-inner"><p>All Solveria installations are backed by a comprehensive 25-year linear performance warranty on the solar arrays, a 10-year comprehensive workmanship warranty, and robust manufacturer guarantees on all inverters and backup batteries.</p></div>
@@ -1273,7 +1421,40 @@
             <div class="faq-item stagger-item">
                 <button class="faq-question">
                     <span>Do you manage the permitting and utility approvals?</span>
-                    <svg class="faq-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11"></circle><line class="faq-vline" x1="12" y1="7" x2="12" y2="17"></line><line class="faq-hline" x1="7" y1="12" x2="17" y2="12"></line></svg>
+                    
+                    <span class="lens-shadow-wrapper faq-glass-lens">
+                        <span class="lens-glass-element faq-icon-glass" data-lazy-glass="true" data-width="44" data-height="44" data-radius="22" data-id="faq_5" style="width: 44px; height: 44px; border-radius: 22px;">
+                            <span class="lens-content-clone">
+                                <span class="lens-clone-inner">
+                                    <span class="lens-clone-bg"></span>
+                                    <span style="position: absolute; inset: 0; background: rgba(0,0,0,0.03);"></span>
+                                </span>
+                            </span>
+                            <span class="lens-glass-inner"></span>
+                            <span class="lens-glass-text">
+                                <svg class="faq-icon-svg" viewBox="0 0 24 24">
+                                    <line class="faq-vline" x1="12" y1="7" x2="12" y2="17"></line>
+                                    <line class="faq-hline" x1="7" y1="12" x2="17" y2="12"></line>
+                                </svg>
+                            </span>
+                            <svg style="width: 0; height: 0; position: absolute;" aria-hidden="true">
+                                <defs>
+                                    <filter id="lensLiquidGlassFilter_faq_5" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+                                        <feGaussianBlur in="SourceGraphic" stdDeviation="0.5" result="blurred" />
+                                        <feImage id="lensDisplacementImage_faq_5" href="" x="0" y="0" width="44" height="44" result="displacement_map" preserveAspectRatio="none" />
+                                        <feDisplacementMap id="lensDisplacementMap_faq_5" in="blurred" in2="displacement_map" scale="50" xChannelSelector="R" yChannelSelector="G" result="displaced" />
+                                        <feColorMatrix in="displaced" type="saturate" values="1.3" result="displaced_saturated" />
+                                        <feImage id="lensSpecularImage_faq_5" href="" x="0" y="0" width="44" height="44" result="specular_layer" preserveAspectRatio="none" />
+                                        <feComponentTransfer in="specular_layer" result="specular_faded">
+                                            <feFuncA type="linear" slope="0.5" />
+                                        </feComponentTransfer>
+                                        <feBlend in="specular_faded" in2="displaced_saturated" mode="screen" />
+                                    </filter>
+                                </defs>
+                            </svg>
+                        </span>
+                    </span>
+
                 </button>
                 <div class="faq-answer">
                     <div class="faq-answer-inner"><p>Yes. Our internal engineering and administrative teams handle 100% of the red tape on your behalf, from complex structural engineering stamps to local city permits and final utility interconnection agreements.</p></div>
